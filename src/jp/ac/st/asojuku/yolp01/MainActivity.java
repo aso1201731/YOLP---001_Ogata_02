@@ -3,6 +3,8 @@ package jp.ac.st.asojuku.yolp01;
 import jp.co.yahoo.android.maps.GeoPoint;
 import jp.co.yahoo.android.maps.MapController;
 import jp.co.yahoo.android.maps.MapView;
+import jp.co.yahoo.android.maps.weather.WeatherOverlay;
+import jp.co.yahoo.android.maps.weather.WeatherOverlay.WeatherOverlayListener;
 import android.app.Activity;
 import android.content.Context;
 import android.location.Criteria;
@@ -12,12 +14,14 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.Menu;
 
-public class MainActivity extends Activity implements LocationListener{
+public class MainActivity extends Activity implements LocationListener, WeatherOverlayListener{
 
 	LocationManager mLocationManager = null;
 	MapView mMapView = null;
 	int lastLatitude = 0;
 	int lastLomgitude = 0;
+
+	WeatherOverlay mWeatherOverlay = null; //雨雲レーダー表示用オーバーレイクラス変数
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -83,12 +87,12 @@ public class MainActivity extends Activity implements LocationListener{
 		mMapView.setScalebar(true);
 
 		//手動で地図をセット（渋谷駅の経度緯度）
-		double lat = 35.658516;
-		double lon = 139.701773;
-		GeoPoint gp = new GeoPoint((int)(lat * 1000000),(int)(lon * 1000000));
+		//double lat = 35.658516;
+		//double lon = 139.701773;
+		//GeoPoint gp = new GeoPoint((int)(lat * 1000000),(int)(lon * 1000000));
 		MapController c = mMapView.getMapController(); //地図本体取得
 
-		c.setCenter(gp);
+		c.setCenter(new GeoPoint(35665721, 139731006));
 		c.setZoom(3);
 		setContentView(mMapView);
 
@@ -101,6 +105,28 @@ public class MainActivity extends Activity implements LocationListener{
 		String provider = mLocationManager.getBestProvider(criteria, true);
 
 		mLocationManager.requestLocationUpdates(provider, 0, 0, this);
+
+
+		//雨雲レーダー処理
+		mWeatherOverlay = new WeatherOverlay(this); //雨雲レーダー用オーバーレイ設定処理
+
+		mWeatherOverlay.setWeatherOverlayListener(this); //WeatherOverlayListenerを指定
+
+		mWeatherOverlay.startAutoUpdate(1); //雨雲レーダーの更新間隔を分単位で指定
+
+		mMapView.getOverlays().add(mWeatherOverlay); //MapViewにWeatherOverlayを追加
+	}
+
+	@Override
+	public void errorUpdateWeather(WeatherOverlay arg0, int arg1) {
+		// TODO 自動生成されたメソッド・スタブ
+
+	}
+
+	@Override
+	public void finishUpdateWeather(WeatherOverlay arg0) {
+		// TODO 自動生成されたメソッド・スタブ
+
 	}
 
 
